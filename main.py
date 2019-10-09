@@ -1,3 +1,5 @@
+import typing as t
+
 from mysql.connector import connect
 from mysql.connector.connection_cext import CMySQLConnection
 
@@ -28,6 +30,10 @@ def grant_all(connection: CMySQLConnection, user: str):
 def revoke_all(connection: CMySQLConnection, user: str):
     query = "REVOKE ALL PRIVILEGES ON *.* FROM '{}'@'localhost';".format(user)
     execute_query(connection, query)
+
+
+def execute_grant_request():
+    pass
 
 
 def main():

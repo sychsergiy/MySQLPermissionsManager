@@ -11,10 +11,7 @@ class Destination(t.NamedTuple):
     columns: t.List[str] = None
 
 
-def check_grant_destination(
-        grant: Grant,
-        destination: Destination,
-) -> str:
+def check_grant_destination(grant: Grant, destination: Destination) -> str:
     """
     returns error message if validation fail's, empty string other way
     """

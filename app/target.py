@@ -4,45 +4,74 @@ from app import grants
 from app.grants import Grant
 
 
+class TargetQueryParts(t.NamedTuple):
+    database: str = ""
+    table: str = ""
+    columns: str = ""
+
+
+class TargetLevelException(Exception):
+    pass
+
+
+class AbstractTarget(object):
+    level: grants.Levels = None
+
+    def check_grant_level(self, grant: Grant):
+        if not {self.level}.issubset(grant.levels):
+            raise TargetLevelException(
+                f"{grant.action} can't be used with target.\n"
+                f"Target level: {str(self.level)}\n"
+                f"Grant levels: {str(grant.levels)}\n"
+            )
+
+    def get_query_parts(self) -> TargetQueryParts:
+        raise NotImplementedError
+
+
+class GlobalTarget(AbstractTarget):
+    level = grants.Levels.GLOBAL
+
+    def get_query_parts(self) -> TargetQueryParts:
+        return TargetQueryParts("*", "*")
+
+
+class DatabaseTarget(AbstractTarget):
+    level = grants.Levels.DATABASE
+
+    def __init__(self, database: str):
+        self.database = database
+
+    def get_query_parts(self) -> TargetQueryParts:
+        return TargetQueryParts(self.database, "*")
+
+
+class TableTarget(AbstractTarget):
+    level = grants.Levels.TABLE
+
+    def __init__(self, database: str, table: str):
+        self.database = database
+        self.table = table
+
+    def get_query_parts(self) -> TargetQueryParts:
+        return TargetQueryParts(self.database, self.table)
+
+
+class ColumnsTarget(AbstractTarget):
+    level = grants.Levels.COLUMN
+
+    def __init__(self, database: str, table: str, columns: t.List[str]):
+        self.database = database
+        self.table = table
+        self.columns = columns
+
+    def get_query_parts(self):
+        columns_part = "({})".format(','.join(self.columns))
+        return TargetQueryParts(self.database, self.table, columns_part)
+
+
 class Target(t.NamedTuple):
     global_: bool = False
     database: str = ""
     table: str = ""
     columns: t.List[str] = None
-
-
-def check_grant_target(grant: Grant, target: Target) -> str:
-    """
-    returns error message if validation fail's, empty string other way
-    """
-    if target.global_ and not grants.only_global.issubset(grant.levels):
-        return f"{grant.action} can't be used with global target"
-
-    if target.database and not grants.only_db.issubset(grant.levels):
-        return f"{grant.action} can't be used with database target"
-
-    if target.table and not grants.only_table.issubset(grant.levels):
-        return f"{grant.action} can't be used with table target"
-
-    if target.columns and not grants.only_column.issubset(grant.levels):
-        return f"{grant.action} can't be used with columns target"
-    return ""
-
-
-def get_available_actions_map():
-    return {'_'.join(item.action.lower().split(" ")): item for item in
-            grants.GRANTS}
-
-
-def create_target(target_db: str,
-                  target_table: str,
-                  target_columns: str):
-    if not target_db and not target_table and not target_columns:
-        return Target(global_=True)
-
-    if target_columns:
-        target_columns_list = target_columns.split('|')
-    else:
-        target_columns_list = []
-    return Target(database=target_db, table=target_table,
-                  columns=target_columns_list)

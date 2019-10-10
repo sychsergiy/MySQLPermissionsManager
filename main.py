@@ -2,9 +2,8 @@ from mysql.connector import connect
 from mysql.connector.connection_cext import CMySQLConnection
 from app import grants
 from app.grants import Grant
-from app.target import Target, check_grant_target
-from app.query_builder import BaseQueryBuilder, GrantQueryBuilder, \
-    RevokeQueryBuilder
+from app.target import AbstractTarget, GlobalTarget
+from app.query_builder import BaseQueryBuilder, GrantQueryBuilder, RevokeQueryBuilder
 
 
 def create_connection(user='admin', password='admin'):
@@ -26,30 +25,27 @@ def execute_query(connection: CMySQLConnection, query: str):
 
 
 class Request(object):
-    def __init__(self, grant: grants.Grant, target: Target,
+    def __init__(self, grant: grants.Grant, target: AbstractTarget,
                  query_builder: BaseQueryBuilder):
         self.grant = grant
         self.target = target
         self.query_builder = query_builder
 
     def execute(self, user: str, connection: CMySQLConnection):
-        error_message = check_grant_target(self.grant, self.target)
-        if error_message:
-            print(error_message)
-        else:
-            query = self.query_builder.build(user)
-            execute_query(connection, query)
-            execute_query(connection, "FLUSH PRIVILEGES;")
+        self.target.check_grant_level(self.grant)
+        query = self.query_builder.build(user)
+        execute_query(connection, query)
+        execute_query(connection, "FLUSH PRIVILEGES;")
 
 
-def execute_grant_request(grant: Grant, target: Target, user: str):
+def execute_grant_request(grant: Grant, target: AbstractTarget, user: str):
     query_builder = GrantQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
     connection = create_connection()
     request.execute(user, connection)
 
 
-def execute_revoke_request(grant: Grant, target: Target, user: str):
+def execute_revoke_request(grant: Grant, target: AbstractTarget, user: str):
     query_builder = RevokeQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
     connection = create_connection()
@@ -57,7 +53,7 @@ def execute_revoke_request(grant: Grant, target: Target, user: str):
 
 
 def main():
-    pass
+    execute_revoke_request(grants.GRANTS[3], GlobalTarget(), "test_user")
 
 
 if __name__ == "__main__":

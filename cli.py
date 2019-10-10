@@ -1,7 +1,12 @@
 import click
 
-from app.target import get_available_actions_map, create_target
 from main import execute_revoke_request, execute_grant_request
+from app import grants
+
+
+def get_available_actions_map():
+    return {'_'.join(item.action.lower().split(" ")): item for item in
+            grants.GRANTS}
 
 
 @click.group()

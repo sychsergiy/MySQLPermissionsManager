@@ -4,6 +4,8 @@ from mysql.connector import connect
 from mysql.connector.connection_cext import CMySQLConnection
 from app import grants
 from app.destination import Destination, check_grant_destination
+from app.query_builder import BaseQueryBuilder, GrantQueryBuilder, \
+    RevokeQueryBuilder
 
 
 def create_connection(user='admin', password='admin'):
@@ -24,54 +26,40 @@ def execute_query(connection: CMySQLConnection, query: str):
     cursor.close()
 
 
-def grant_all(connection: CMySQLConnection, user: str):
-    query = "GRANT ALL PRIVILEGES ON *.* TO '{}'@'localhost';".format(user)
-    execute_query(connection, query)
-
-
-def revoke_all(connection: CMySQLConnection, user: str):
-    query = "REVOKE ALL PRIVILEGES ON *.* FROM '{}'@'localhost';".format(user)
-    execute_query(connection, query)
-
-
-class GrantRequest(object):
-    def __init__(self, grant: grants.Grant, destination: Destination):
+class Request(object):
+    def __init__(self, grant: grants.Grant, destination: Destination,
+                 query_builder: BaseQueryBuilder):
         self.grant = grant
         self.destination = destination
+        self.query_builder = query_builder
 
     def execute(self, user: str, connection: CMySQLConnection):
         error_message = check_grant_destination(self.grant, self.destination)
         if error_message:
             print(error_message)
         else:
-            query = self.build_grant_query(user)
+            query = self.query_builder.build(user)
             execute_query(connection, query)
-
-    def build_grant_query(self, user: str) -> str:
-
-        query = "GRANT {} ON *.* TO '{}'@'localhost';".format(
-            self.grant.action,
-            user
-        )
-        return query
-
-    def build_revoke_query(self, user: str) -> str:
-        query = "REVOKE {} ON *.* FROM '{}'@'localhost';".format(
-            self.grant.action,
-            user
-        )
-        return query
+            execute_query(connection, "FLUSH PRIVILEGES;")
 
 
 def execute_grant_request(connection):
-    request = GrantRequest(grants.GRANTS[3], Destination(True))
+    query_builder = GrantQueryBuilder(grants.GRANTS[3].action,
+                                      Destination(True))
+    request = Request(grants.GRANTS[3], Destination(True), query_builder)
+    request.execute("test_user", connection)
+
+
+def execute_revoke_request(connection):
+    query_builder = RevokeQueryBuilder(grants.GRANTS[3].action,
+                                       Destination(True))
+    request = Request(grants.GRANTS[3], Destination(True), query_builder)
     request.execute("test_user", connection)
 
 
 def main():
     connection = create_connection()
-    execute_grant_request(connection)
-    # revoke_all(connection, 'test_user')
+    execute_revoke_request(connection)
     connection.close()
 
 

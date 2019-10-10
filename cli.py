@@ -8,6 +8,7 @@ from app.grants import Grant
 from app.target import GlobalTarget, DatabaseTarget, TableTarget, AbstractTarget
 from main import execute_revoke_request, execute_grant_request
 from app import grants
+from app import auth
 
 
 def get_available_actions_map():
@@ -97,8 +98,15 @@ def cli():
 
 
 @cli.command()
-def login():
-    pass
+@click.argument("username")
+@click.argument("password")
+def login(username: str, password: str):
+    auth.login(username, password)
+
+
+@cli.command()
+def logout():
+    auth.logout()
 
 
 @cli.command()

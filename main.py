@@ -54,8 +54,10 @@ def execute_revoke_request(grant: Grant, target: AbstractTarget, user: str):
 
 
 def main():
-    execute_revoke_request(grants.GRANTS[3], GlobalTarget(), "test_user")
-
+    # execute_revoke_request(grants.GRANTS[3], GlobalTarget(), "test_user")
+    from app import auth
+    auth.login("admin", "admin")
+    print(auth.access())
 
 if __name__ == "__main__":
     main()

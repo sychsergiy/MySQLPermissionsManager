@@ -19,7 +19,7 @@ only_table = {Levels.TABLE}
 only_column = {Levels.COLUMN}
 only_proxy = {Levels.PROXY}
 
-global_db = only_global & only_db
+global_db = only_global | only_db
 global_db_routine = global_db | {Levels.ROUTINE}
 global_db_table = global_db | only_table
 global_db_table_routine_proxy = global_db_routine | only_proxy | only_table

@@ -1,27 +1,16 @@
-from mysql.connector import connect
 from mysql.connector.connection_cext import CMySQLConnection
 
 from app import grants
+from app.connector import create_connection
 from app.grants import Grant
-from app.target import AbstractTarget, GlobalTarget
-from app.query_builder import BaseQueryBuilder, GrantQueryBuilder, RevokeQueryBuilder
-
-
-def create_connection(user='admin', password='admin'):
-    """
-    CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
-    GRANT ALL PRIVILEGES on *.* to 'admin'@'localhost';
-    GRANT GRANT OPTION on *.* to 'admin'@'localhost;
-    """
-    cnx = connect(user=user, password=password,
-                  host='127.0.0.1')
-    # cnx.close()
-    return cnx
+from app.target import AbstractTarget
+from app.query_builder import BaseQueryBuilder, GrantQueryBuilder, \
+    RevokeQueryBuilder
 
 
 def execute_query(connection: CMySQLConnection, query: str):
     cursor = connection.cursor()
-    result = cursor.execute(query)
+    cursor.execute(query)
     cursor.close()
 
 
@@ -32,32 +21,30 @@ class Request(object):
         self.target = target
         self.query_builder = query_builder
 
-    def execute(self, user: str, connection: CMySQLConnection):
+    def execute(self, user: str):
         self.target.check_grant_level(self.grant)
         query = self.query_builder.build(user)
+        connection = create_connection()
         execute_query(connection, query)
         execute_query(connection, "FLUSH PRIVILEGES;")
+        connection.close()
 
 
 def execute_grant_request(grant: Grant, target: AbstractTarget, user: str):
     query_builder = GrantQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
-    connection = create_connection()
-    request.execute(user, connection)
+    request.execute(user)
 
 
 def execute_revoke_request(grant: Grant, target: AbstractTarget, user: str):
     query_builder = RevokeQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
-    connection = create_connection()
-    request.execute(user, connection)
+    request.execute(user)
 
 
 def main():
-    # execute_revoke_request(grants.GRANTS[3], GlobalTarget(), "test_user")
-    from app import auth
-    auth.login("admin", "admin")
-    print(auth.access())
+    create_connection()
+
 
 if __name__ == "__main__":
     main()

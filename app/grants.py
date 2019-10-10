@@ -10,19 +10,17 @@ class Levels(Enum):
     COMMAND = 3
     COLUMN = 4
     ROUTINE = 5
-    PROXY = 6
 
 
 only_global = {Levels.GLOBAL}
 only_db = {Levels.DATABASE}
 only_table = {Levels.TABLE}
 only_column = {Levels.COLUMN}
-only_proxy = {Levels.PROXY}
 
 global_db = only_global | only_db
 global_db_routine = global_db | {Levels.ROUTINE}
 global_db_table = global_db | only_table
-global_db_table_routine_proxy = global_db_routine | only_proxy | only_table
+global_db_table_routine = global_db_routine | only_table
 global_db_table_column = global_db_table | only_column
 
 
@@ -48,7 +46,7 @@ GRANTS = [
     Grant("EVENT", global_db),
     Grant("EXECUTE", global_db_routine),
     Grant("FILE", only_global),
-    Grant("GRANT OPTION", global_db_table_routine_proxy),
+    Grant("GRANT OPTION", global_db_table_routine),
     Grant("INDEX", global_db_table),
     Grant("INSERT", global_db_table_column),
     Grant("LOCK TABLE", global_db),

@@ -1,5 +1,6 @@
 from mysql.connector import connect
 from mysql.connector.connection_cext import CMySQLConnection
+
 from app import grants
 from app.grants import Grant
 from app.target import AbstractTarget, GlobalTarget

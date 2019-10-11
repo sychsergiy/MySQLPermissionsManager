@@ -1,7 +1,6 @@
 import typing as t
-from app import grants
 
-from app.grants import Grant
+from app import grants
 
 
 class TargetQueryParts(t.NamedTuple):
@@ -17,7 +16,7 @@ class TargetLevelException(Exception):
 class AbstractTarget(object):
     level: grants.Levels = None
 
-    def check_grant_level(self, grant: Grant):
+    def check_grant_level(self, grant: grants.Grant):
         if not {self.level}.issubset(grant.levels):
             raise TargetLevelException(
                 f"{grant.action} can't be used with target.\n"
@@ -66,7 +65,7 @@ class ColumnsTarget(AbstractTarget):
         self.columns = columns
 
     def get_query_parts(self):
-        columns_part = "({})".format(','.join(self.columns))
+        columns_part = "({})".format(",".join(self.columns))
         return TargetQueryParts(self.database, self.table, columns_part)
 
 

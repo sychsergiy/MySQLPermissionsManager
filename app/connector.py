@@ -1,10 +1,9 @@
 import sys
-
 from contextlib import contextmanager
 
 from mysql.connector import connect
-from mysql.connector.errors import ProgrammingError
 from mysql.connector.connection_cext import CMySQLConnection
+from mysql.connector.errors import ProgrammingError
 
 from app import auth
 
@@ -17,8 +16,9 @@ def create_connection():
     """
     creds = auth.access()
     try:
-        cnx = connect(user=creds.username, password=creds.password,
-                      host='127.0.0.1')
+        cnx = connect(
+            user=creds.username, password=creds.password, host="127.0.0.1"
+        )
     except ProgrammingError as e:
         print(e)
         sys.exit(1)

@@ -1,5 +1,4 @@
 import typing as t
-
 from enum import Enum
 
 
@@ -66,6 +65,5 @@ GRANTS = [
 ]
 
 
-def get_available_actions_map():
-    return {'_'.join(item.action.lower().split(" ")): item for item in
-            GRANTS}
+def get_available_grant_actions_map():
+    return {"_".join(item.action.lower().split(" ")): item for item in GRANTS}

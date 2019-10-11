@@ -1,8 +1,7 @@
 import typing as t
-
 from enum import Enum
 
-from app.target import GlobalTarget, DatabaseTarget, TableTarget, ColumnsTarget
+from app.target import ColumnsTarget, DatabaseTarget, GlobalTarget, TableTarget
 
 
 class TargetTypes(Enum):

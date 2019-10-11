@@ -2,16 +2,16 @@ import sys
 
 from mysql.connector import ProgrammingError
 
-from app.grants import get_available_actions_map
+from app.connector import connection, cursor
+from app.grants import get_available_grant_actions_map
 from app.target_types import TargetTypes
-from app.connector import cursor, connection
 
 
 def check_action(action: str):
-    available_action_map = get_available_actions_map()
+    available_action_map = get_available_grant_actions_map()
     if action not in available_action_map.keys():
         print(f"Not recognized action: {action}")
-        actions = ', '.join(available_action_map.keys())
+        actions = ", ".join(available_action_map.keys())
         print(f"Available actions: {actions}")
         sys.exit(1)
 

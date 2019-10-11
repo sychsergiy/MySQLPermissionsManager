@@ -1,10 +1,10 @@
 import click
 
-from app.grants import get_available_actions_map
-from app.cli_helper import check_action, check_target_type, fetch_grants
-from app.request import execute_revoke_request, execute_grant_request
-from app.target_types import TargetTypeCreator
 from app import auth
+from app.cli_helper import check_action, check_target_type, fetch_grants
+from app.grants import get_available_grant_actions_map
+from app.request import execute_grant_request, execute_revoke_request
+from app.target_types import TargetTypeCreator
 
 
 @click.group()
@@ -34,12 +34,12 @@ def logout():
 
 
 @cli.command()
-@click.argument('action')
-@click.argument('username')
-@click.argument('target_type')
+@click.argument("action")
+@click.argument("username")
+@click.argument("target_type")
 def revoke(action: str, username: str, target_type: str):
     check_action(action)
-    grant_ = get_available_actions_map()[action]
+    grant_ = get_available_grant_actions_map()[action]
 
     check_target_type(target_type)
     target = TargetTypeCreator().create(target_type)
@@ -48,12 +48,12 @@ def revoke(action: str, username: str, target_type: str):
 
 
 @cli.command()
-@click.argument('action')
-@click.argument('username')
-@click.argument('target_type')
+@click.argument("action")
+@click.argument("username")
+@click.argument("target_type")
 def grant(action: str, username: str, target_type: str):
     check_action(action)
-    grant_ = get_available_actions_map()[action]
+    grant_ = get_available_grant_actions_map()[action]
 
     check_target_type(target_type)
     target = TargetTypeCreator().create(target_type)

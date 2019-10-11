@@ -5,17 +5,21 @@ from mysql.connector.connection_cext import CMySQLConnection
 
 from app import grants
 from app.connector import connection, cursor
-from app.target import AbstractTarget, TargetLevelException
 from app.query_builder import (
     BaseQueryBuilder,
     GrantQueryBuilder,
     RevokeQueryBuilder,
 )
+from app.target import AbstractTarget, TargetLevelException
 
 
 class Request(object):
-    def __init__(self, grant: grants.Grant, target: AbstractTarget,
-                 query_builder: BaseQueryBuilder):
+    def __init__(
+        self,
+        grant: grants.Grant,
+        target: AbstractTarget,
+        query_builder: BaseQueryBuilder,
+    ):
         self.grant = grant
         self.target = target
         self.query_builder = query_builder
@@ -37,16 +41,18 @@ class Request(object):
             execute_query(conn, "FLUSH PRIVILEGES;")
 
 
-def execute_grant_request(grant: grants.Grant, target: AbstractTarget,
-                          user: str):
+def execute_grant_request(
+    grant: grants.Grant, target: AbstractTarget, user: str
+):
     query_builder = GrantQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
     print(f"Executing request grant {grant.action} to {user}")
     request.execute(user)
 
 
-def execute_revoke_request(grant: grants.Grant, target: AbstractTarget,
-                           user: str):
+def execute_revoke_request(
+    grant: grants.Grant, target: AbstractTarget, user: str
+):
     query_builder = RevokeQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
     print(f"Executing request revoke {grant.action} from {user}")

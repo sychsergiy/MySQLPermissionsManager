@@ -1,9 +1,12 @@
 import sys
 
-from app import auth
+from contextlib import contextmanager
 
 from mysql.connector import connect
 from mysql.connector.errors import ProgrammingError
+from mysql.connector.connection_cext import CMySQLConnection
+
+from app import auth
 
 
 def create_connection():
@@ -20,3 +23,21 @@ def create_connection():
         print(e)
         sys.exit(1)
     return cnx
+
+
+@contextmanager
+def connection():
+    conn = create_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
+@contextmanager
+def cursor(conn: CMySQLConnection):
+    cur = conn.cursor()
+    try:
+        yield cur
+    finally:
+        cur.close()

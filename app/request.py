@@ -4,7 +4,7 @@ from mysql.connector import ProgrammingError
 from mysql.connector.connection_cext import CMySQLConnection
 
 from app import grants
-from app.connector import create_connection
+from app.connector import connection, cursor
 from app.target import AbstractTarget, TargetLevelException
 from app.query_builder import (
     BaseQueryBuilder,
@@ -31,10 +31,10 @@ class Request(object):
         self._check_target_grant_level()
 
         query = self.query_builder.build(user)
-        connection = create_connection()
-        execute_query(connection, query)
-        execute_query(connection, "FLUSH PRIVILEGES;")
-        connection.close()
+
+        with connection() as conn:
+            execute_query(conn, query)
+            execute_query(conn, "FLUSH PRIVILEGES;")
 
 
 def execute_grant_request(grant: grants.Grant, target: AbstractTarget,
@@ -53,10 +53,9 @@ def execute_revoke_request(grant: grants.Grant, target: AbstractTarget,
     request.execute(user)
 
 
-def execute_query(connection: CMySQLConnection, query: str):
-    cursor = connection.cursor()
-    try:
-        cursor.execute(query)
-    except ProgrammingError as e:
-        print(e)
-    cursor.close()
+def execute_query(conn: CMySQLConnection, query: str):
+    with cursor(conn) as curs:
+        try:
+            curs.execute(query)
+        except ProgrammingError as e:
+            print(e)

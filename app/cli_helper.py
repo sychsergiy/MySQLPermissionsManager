@@ -1,7 +1,10 @@
 import sys
 
+from mysql.connector import ProgrammingError
+
 from app.grants import get_available_actions_map
 from app.target_types import TargetTypes
+from app.connector import cursor, connection
 
 
 def check_action(action: str):
@@ -19,3 +22,16 @@ def check_target_type(target_type: str):
         print(f"Not recognized target type: {target_type}")
         print(f"Available target types: {', '.join(target_types)}")
         sys.exit(1)
+
+
+def fetch_grants(user: str) -> list:
+    with connection() as conn:
+        with cursor(conn) as cur:
+            query = f"SHOW GRANTS FOR '{user}'@'localhost'"
+            try:
+                cur.execute(query)
+                items = cur.fetchall()
+                return items
+            except ProgrammingError as e:
+                print(e)
+                return []

@@ -1,7 +1,7 @@
 import click
 
 from app.grants import get_available_actions_map
-from app.cli_helper import check_action, check_target_type
+from app.cli_helper import check_action, check_target_type, fetch_grants
 from app.request import execute_revoke_request, execute_grant_request
 from app.target_types import TargetTypeCreator
 from app import auth
@@ -10,6 +10,15 @@ from app import auth
 @click.group()
 def cli():
     pass
+
+
+@cli.command()
+@click.argument("username")
+def show_grants(username: str):
+    grants = fetch_grants(username)
+    print(f"Show Grants for user: {username}\n")
+    for grant_ in grants:
+        print(grant_)
 
 
 @cli.command()

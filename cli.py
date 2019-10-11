@@ -2,11 +2,10 @@ import sys
 
 import click
 
-from enum import Enum
-
 from app.grants import Grant
-from app.target import GlobalTarget, DatabaseTarget, TableTarget, AbstractTarget
-from main import execute_revoke_request, execute_grant_request
+from app.request import execute_revoke_request, execute_grant_request
+from app.target import AbstractTarget
+from app.target_types import TargetTypes, TargetTypeCreator
 from app import grants
 from app import auth
 
@@ -14,51 +13,6 @@ from app import auth
 def get_available_actions_map():
     return {'_'.join(item.action.lower().split(" ")): item for item in
             grants.GRANTS}
-
-
-class TargetTypeReader(object):
-    @staticmethod
-    def read_database():
-        return input("Input database name or '*': ")
-
-    @staticmethod
-    def read_table():
-        return input("Input table name or '*': ")
-
-
-class TargetTypeCreator(object):
-    def __init__(self, reader: TargetTypeReader):
-        self._reader = reader
-
-    def create(self, target_type: str):
-        if target_type == TargetTypes.GLOBAL.value:
-            return self.create_global_target()
-        elif target_type == TargetTypes.DATABASE.value:
-            return self.create_database_target()
-        elif target_type == TargetTypes.TABLE:
-            return self.create_table_target()
-
-    @staticmethod
-    def create_global_target():
-        return GlobalTarget()
-
-    def create_database_target(self):
-        database = self._reader.read_database()
-        return DatabaseTarget(database)
-
-    def create_table_target(self):
-        database = self._reader.read_database()
-        table = self._reader.read_table()
-        return TableTarget(database, table)
-
-    # todo: add_columns
-
-
-class TargetTypes(Enum):
-    GLOBAL = "global"
-    DATABASE = "db"
-    TABLE = "table"
-    # todo: add columns
 
 
 class CommandExecutor(object):
@@ -86,7 +40,7 @@ class CommandExecutor(object):
 
         if not self.check_target_type(target_type):
             sys.exit(1)
-        target_type_creator = TargetTypeCreator(TargetTypeReader())
+        target_type_creator = TargetTypeCreator()
         target = target_type_creator.create(target_type)
 
         return target, grant_

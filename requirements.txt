@@ -1,0 +1,3 @@
+Click==7.0
+mysql-connector-python==8.0.17
+simple-crypt==4.1.7

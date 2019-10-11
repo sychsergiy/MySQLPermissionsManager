@@ -30,7 +30,7 @@ class Grant(t.NamedTuple):
 
 
 GRANTS = [
-    Grant("ALL", set()),
+    Grant("ALL", global_db_table),
     Grant("ALTER", global_db_table),
     Grant("ALTER ROUTINE", global_db_routine),
     Grant("CREATE", global_db_table),
@@ -62,5 +62,10 @@ GRANTS = [
     Grant("SUPER", only_global),
     Grant("TRIGGER", global_db_table),
     Grant("UPDATE", global_db_table_column),
-    Grant("USAGE", set()),
+    Grant("USAGE", global_db_table),
 ]
+
+
+def get_available_actions_map():
+    return {'_'.join(item.action.lower().split(" ")): item for item in
+            GRANTS}

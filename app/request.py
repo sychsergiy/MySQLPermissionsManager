@@ -41,7 +41,7 @@ def execute_grant_request(grant: grants.Grant, target: AbstractTarget,
                           user: str):
     query_builder = GrantQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
-    print(f"Executing revoke request for revoking {grant.action} from {user}")
+    print(f"Executing request grant {grant.action} to {user}")
     request.execute(user)
 
 
@@ -49,7 +49,7 @@ def execute_revoke_request(grant: grants.Grant, target: AbstractTarget,
                            user: str):
     query_builder = RevokeQueryBuilder(grant.action, target)
     request = Request(grant, target, query_builder)
-    print(f"Executing revoke request for granting {grant.action} to {user}")
+    print(f"Executing request revoke {grant.action} from {user}")
     request.execute(user)
 
 

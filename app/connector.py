@@ -1,9 +1,9 @@
 import sys
 
+from app import auth
+
 from mysql.connector import connect
 from mysql.connector.errors import ProgrammingError
-
-from app import auth
 
 
 def create_connection():

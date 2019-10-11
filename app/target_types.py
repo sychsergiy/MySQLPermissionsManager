@@ -1,23 +1,30 @@
+import typing as t
+
 from enum import Enum
 
-from app.target import GlobalTarget, DatabaseTarget, TableTarget
+from app.target import GlobalTarget, DatabaseTarget, TableTarget, ColumnsTarget
 
 
 class TargetTypes(Enum):
     GLOBAL = "global"
     DATABASE = "db"
     TABLE = "table"
-    # todo: add columns
+    COLUMNS = "cols"
 
 
 class TargetTypeReader(object):
     @staticmethod
-    def read_database():
+    def read_database() -> str:
         return input("Input database name or '*': ")
 
     @staticmethod
-    def read_table():
+    def read_table() -> str:
         return input("Input table name or '*': ")
+
+    @staticmethod
+    def read_columns() -> t.List[str]:
+        cols = input("Input columns names with '|' delimiter: ")
+        return cols.split("|")
 
 
 class TargetTypeCreator(object):
@@ -31,6 +38,16 @@ class TargetTypeCreator(object):
             return self.create_database_target()
         elif target_type == TargetTypes.TABLE.value:
             return self.create_table_target()
+        elif target_type == TargetTypes.COLUMNS.value:
+            return self.create_columns_target()
+        else:
+            raise RuntimeError("Other target types no implemented")
+
+    def create_columns_target(self) -> ColumnsTarget:
+        db = self._reader.read_database()
+        table = self._reader.read_table()
+        cols = self._reader.read_columns()
+        return ColumnsTarget(db, table, cols)
 
     @staticmethod
     def create_global_target():
@@ -44,5 +61,3 @@ class TargetTypeCreator(object):
         database = self._reader.read_database()
         table = self._reader.read_table()
         return TableTarget(database, table)
-
-    # todo: add_columns
